@@ -1,3 +1,0 @@
-character: -1
-words: 0
-lines: 0

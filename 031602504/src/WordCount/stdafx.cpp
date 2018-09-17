@@ -42,10 +42,7 @@ int CountMeths::CountCharacters()
 	err = fread(&onechar, sizeof(char), 1, filein);
 	while (err)
 	{
-		if (onechar <= 127 && onechar >= 0)
-		{
 			characternum++;
-		}
 		err = fread(&onechar, sizeof(char), 1, filein);
 	}
 	assert(filein);
@@ -245,27 +242,15 @@ void CountMeths::ChangeFiles(string name)
 }
 void CountMeths::ResultFile(string name)
 {
-	int r_characters = this->CountCharacters();
-	int r_caildlines = this->ValidLines();
-	int r_words = this->CountWords();
-	char firstpart[100]; memset(firstpart,'\0',100);
-	char secondpart[100]; memset(secondpart,'\0',100);
-	sprintf_s(firstpart,50,"characters: %d\nwords: %d\nlines: %d\n",r_characters,r_words,r_caildlines);
-	char outfilename[100];
-	strcpy_s(outfilename, name.size() + 1, name.c_str());
-	FILE* fileout;
-	int err;
-	err = fopen_s(&fileout, outfilename, "w");
-	if (err)
-	{
-		printf("erro! \n");
-	}
-	fwrite(firstpart,sizeof(char)*strlen(firstpart),1,fileout);
-	fclose(fileout);
+	int r_characters = 0;
+	int r_vaildlines = this->ValidLines();
+	int r_words = 0;
+	
 	//词频统计部分代码
 	word_frequency maxten[10];
 	map<string, int>dict;
 	FILE* filein;
+	int err;
 	err = fopen_s(&filein, filename, "r");
 	if (err)
 	{
@@ -277,6 +262,7 @@ void CountMeths::ResultFile(string name)
 	err = fread(&onechar, sizeof(char), 1, filein);
 	while (err)
 	{
+		++r_characters;
 		if ((onechar >= 48 && onechar <= 57) || (onechar >= 65 && onechar <= 90) || (onechar >= 97 && onechar <= 122))
 		{
 			if (onechar >= 65 && onechar <= 90)
@@ -290,6 +276,7 @@ void CountMeths::ResultFile(string name)
 		{
 			if (IsWord(word))
 			{
+				++r_words;
 				if (!dict[word])
 				{
 					dict[word] = 1;
@@ -306,6 +293,7 @@ void CountMeths::ResultFile(string name)
 	//判断最后一个单词是否为单词；
 	if (IsWord(word))
 	{
+		++r_words;
 		if (!dict[word])
 		{
 			dict[word] = 1;
@@ -318,6 +306,21 @@ void CountMeths::ResultFile(string name)
 	memset((void*)word, '\0', sizeof(char) * 1000);
 	fclose(filein);
 
+	//写入词数等部分；
+	char firstpart[100]; memset(firstpart, '\0', 100);
+	char secondpart[100]; memset(secondpart, '\0', 100);
+	sprintf_s(firstpart, 50, "characters: %d\nwords: %d\nlines: %d\n", r_characters, r_words, r_vaildlines);
+	char outfilename[100];
+	strcpy_s(outfilename, name.size() + 1, name.c_str());
+	FILE* fileout;
+	
+	err = fopen_s(&fileout, outfilename, "w");
+	if (err)
+	{
+		printf("erro! \n");
+	}
+	fwrite(firstpart, sizeof(char)*strlen(firstpart), 1, fileout);
+	fclose(fileout);
 	//写入词频部分
 	err = fopen_s(&fileout, outfilename, "a+");
 	if (err)
